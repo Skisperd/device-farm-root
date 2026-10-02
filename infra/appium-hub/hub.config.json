@@ -1,0 +1,19 @@
+{
+  "server": {
+    "address": "0.0.0.0",
+    "log-timestamp": true,
+    "relaxed-security": false,
+    "plugin": {
+      "device-farm": {
+        "platform": "android",
+        "androidDeviceType": "both",
+        "skipChromeDownload": true,
+        "removeDevicesFromDatabaseBeforeRunningThePlugin": true,
+        "deviceAvailabilityTimeoutMs": 300000,
+        "deviceAvailabilityQueryIntervalMs": 10000,
+        "checkStaleDevicesIntervalMs": 30000,
+        "newCommandTimeoutSec": 120
+      }
+    }
+  }
+}

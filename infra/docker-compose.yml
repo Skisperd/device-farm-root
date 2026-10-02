@@ -1,0 +1,56 @@
+# Docker Android Farm — macOS
+#
+#   make farm-up                   -> Appium hub + device-farm (dashboard at http://localhost:4723/device-farm)
+#   make emulators-up N=2          -> headless Android emulators on Mac, connected to the hub
+#   make farm-up PROFILES=emulator -> emulator in container: Linux x86 with /dev/kvm ONLY (not available on macOS)
+#
+# Devices reach the hub via three paths:
+#   1. ADB_CONNECT_DEVICES  -> Mac headless emulators (host.docker.internal:5555,5557...) or Wi-Fi devices
+#   2. Native node on Mac   -> iOS (real/simulator) and Android via USB (scripts/start-node.sh)
+#   3. "emulator" profile   -> Docker Android emulator (Linux/KVM only)
+name: android-device-farm
+
+x-emulator: &emulator
+  image: budtmo/docker-android:${EMULATOR_IMAGE_TAG:-emulator_14.0}
+  profiles: ["emulator"]
+  devices:
+    - /dev/kvm
+  environment:
+    EMULATOR_DEVICE: ${EMULATOR_DEVICE:-Samsung Galaxy S10}
+    WEB_VNC: "true"
+  restart: unless-stopped
+  networks: [farm]
+
+services:
+  appium-hub:
+    build:
+      context: ./appium-hub
+      args:
+        DEVICE_FARM_VERSION: ${DEVICE_FARM_VERSION:-12.0.2}
+    image: android-farm/hub:local
+    container_name: appium-hub
+    platform: linux/amd64
+    ports:
+      - "${APPIUM_PORT:-4723}:4723"
+    environment:
+      ADB_CONNECT_DEVICES: ${ADB_CONNECT_DEVICES:-}
+      APPIUM_EXTRA_ARGS: ${APPIUM_EXTRA_ARGS:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - device-farm-data:/home/androidusr/.cache/appium-device-farm
+      - ${HOST_ADB_KEYS_DIR:-${HOME}/.android}:/host-adb:ro
+    restart: unless-stopped
+    networks: [farm]
+
+  android-emulator:
+    <<: *emulator
+    container_name: android-emulator
+    ports:
+      - "6080:6080"
+
+volumes:
+  device-farm-data:
+
+networks:
+  farm:
