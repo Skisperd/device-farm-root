@@ -1,3 +1,10 @@
 .env
 .emulators/
 *.log
+robot/results/
+__pycache__/
+*.pyc
+.pytest_cache/
+.idea/
+._*
+.DS_Store

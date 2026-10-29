@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "appium-device-farm": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp.server"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "APPIUM_URL": "http://localhost:4723",
+        "ROBOT_TESTS_DIR": "${workspaceFolder}/robot/tests",
+        "ROBOT_RESOURCES_DIR": "${workspaceFolder}/robot/resources"
+      }
+    }
+  }
+}

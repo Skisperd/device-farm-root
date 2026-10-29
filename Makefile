@@ -39,6 +39,34 @@ emulators-reset: ## Delete AVDs (recreated on next emulators-up)
 emulator-view: ## Mirror emulator screen with scrcpy (I=1)
 	@scripts/emulators.sh view $(or $(I),1)
 
+## — MCP server (Appium ↔ Claude) ————————————————————————————————
+SUITE   ?= example/android_smoke.robot
+RESULTS ?= robot/results
+
+mcp-install: ## Install MCP server Python dependencies
+	@pip install -r mcp/requirements.txt
+
+mcp-start: ## Start the MCP server (stdio — used by Claude Code / Desktop)
+	@PYTHONPATH=. APPIUM_URL=$${APPIUM_URL:-http://localhost:4723} python -m mcp.server
+
+## — Robot Framework tests ————————————————————————————————————————
+robot-test: ## Run a Robot suite (SUITE=path, vars: APP_PACKAGE APP_ACTIVITY APP_PATH)
+	@mkdir -p $(RESULTS)/screenshots
+	@python -m robot \
+	  --outputdir $(RESULTS) \
+	  -v APPIUM_URL:$${APPIUM_URL:-http://localhost:4723} \
+	  $(if $(APP_PATH),-v APP_PATH:$(APP_PATH),) \
+	  $(if $(APP_PACKAGE),-v APP_PACKAGE:$(APP_PACKAGE),) \
+	  $(if $(APP_ACTIVITY),-v APP_ACTIVITY:$(APP_ACTIVITY),) \
+	  robot/tests/$(SUITE)
+	@echo "Report: $(RESULTS)/report.html"
+
+robot-list: ## List available Robot suites and test cases
+	@find robot/tests -name "*.robot" | sort | while read f; do \
+	  echo "\n\033[36m$$f\033[0m"; \
+	  grep -E '^[A-Z][^*]' "$$f" 2>/dev/null | sed 's/^/  /'; \
+	done
+
 ## — Shortcuts ————————————————————————————————————————————————————
 up: farm-up emulators-up ## Start hub + emulators
 down: emulators-down farm-down ## Stop emulators + hub
@@ -50,4 +78,6 @@ help: ## Show this help
 
 .PHONY: farm-up farm-down farm-status farm-logs farm-reconnect \
         emulators-up emulators-down emulators-status emulators-list emulators-reset emulator-view \
+        mcp-install mcp-start \
+        robot-test robot-list \
         up down help

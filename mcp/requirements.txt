@@ -1,0 +1,12 @@
+# MCP server runtime
+mcp>=1.0.0
+
+# HTTP client for Appium REST API
+httpx>=0.27.0
+
+# Robot Framework + Appium integration
+robotframework>=7.0
+robotframework-appiumlibrary>=2.0.0
+
+# Optional: Appium Python client (used in custom RF keywords)
+Appium-Python-Client>=3.1.0
